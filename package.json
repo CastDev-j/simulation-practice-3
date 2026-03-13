@@ -1,0 +1,15 @@
+{
+  "name": "practice-3",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "scripts": {
+    "dev": "bun run --watch src/index.ts"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
