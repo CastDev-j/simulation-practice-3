@@ -37,6 +37,38 @@ export class RandomGenerator {
   goodnessOfFitTest: number;
   tTest: number;
   varianceTest: number;
+  runTest: number;
+  pokerTest: number;
+  seriesTest: number;
+
+  runTestDetails: {
+    b: number;
+    mb: number;
+    variance: number;
+    z: number;
+    rejectNullHypothesis: boolean;
+  };
+
+  pokerTestDetails: {
+    handProbabilities: Record<string, number>;
+    observedFrequencies: Record<string, number>;
+    expectedFrequencies: Record<string, number>;
+    groupedExpectedThreshold: number;
+    groupedCategories: string[];
+    effectiveObservedFrequencies: Record<string, number>;
+    effectiveExpectedFrequencies: Record<string, number>;
+    chiSquare: number;
+    degreesOfFreedom: number;
+  };
+
+  seriesTestDetails: {
+    k: number;
+    totalIntervals: number;
+    expectedFrequency: number;
+    observedFrequencies: number[];
+    chiSquare: number;
+    degreesOfFreedom: number;
+  };
 
   frequencyTable: Array<{
     interval: string;
@@ -137,6 +169,35 @@ export class RandomGenerator {
     this.goodnessOfFitTest = this.calculateGoodnessOfFitTest();
     this.tTest = this.calculateTTest();
     this.varianceTest = this.calculateVarianceTest();
+    this.runTestDetails = {
+      b: 0,
+      mb: 0,
+      variance: 0,
+      z: 0,
+      rejectNullHypothesis: false,
+    };
+    this.pokerTestDetails = {
+      handProbabilities: {},
+      observedFrequencies: {},
+      expectedFrequencies: {},
+      groupedExpectedThreshold: 5,
+      groupedCategories: [],
+      effectiveObservedFrequencies: {},
+      effectiveExpectedFrequencies: {},
+      chiSquare: 0,
+      degreesOfFreedom: 0,
+    };
+    this.seriesTestDetails = {
+      k: 0,
+      totalIntervals: 0,
+      expectedFrequency: 0,
+      observedFrequencies: [],
+      chiSquare: 0,
+      degreesOfFreedom: 0,
+    };
+    this.runTest = this.calculateRunTest();
+    this.pokerTest = this.calculatePokerTest();
+    this.seriesTest = this.calculateSeriesTest();
   }
 
   private calculateVarianceTest(): number {
@@ -161,6 +222,206 @@ export class RandomGenerator {
       (sum, row) => sum + row.chiSquareContribution,
       0,
     );
+  }
+
+  private calculateRunTest(): number {
+    const n = this.values.length;
+    if (n < 2) {
+      this.runTestDetails = {
+        b: 0,
+        mb: 0,
+        variance: 0,
+        z: 0,
+        rejectNullHypothesis: false,
+      };
+      return 0;
+    }
+
+    const signs: ("+" | "-")[] = [];
+    for (let i = 0; i < n - 1; i++) {
+      signs.push(this.values[i]! < this.values[i + 1]! ? "+" : "-");
+    }
+
+    let b = 1;
+    for (let i = 1; i < signs.length; i++) {
+      if (signs[i] !== signs[i - 1]) {
+        b += 1;
+      }
+    }
+
+    const mb = (2 * n - 1) / 3;
+    const variance = (16 * n - 29) / 90;
+    const z = variance > 0 ? (b - mb) / Math.sqrt(variance) : 0;
+    const rejectNullHypothesis = z > 1.96;
+
+    this.runTestDetails = {
+      b,
+      mb,
+      variance,
+      z,
+      rejectNullHypothesis,
+    };
+
+    return z;
+  }
+
+  private classifyPokerHand(digits: string[]): string {
+    const counts: Record<string, number> = {};
+
+    digits.forEach((digit) => {
+      counts[digit] = (counts[digit] || 0) + 1;
+    });
+
+    const pattern = Object.values(counts).sort((a, b) => b - a);
+
+    if (pattern[0] === 5) return "fiveOfAKind";
+    if (pattern[0] === 4) return "poker";
+    if (pattern[0] === 3 && pattern[1] === 1) return "threeOfAKind";
+    if (pattern[0] === 2 && pattern[1] === 2) return "twoPairs";
+    if (pattern[0] === 2) return "onePair";
+    return "allDifferent";
+  }
+
+  private calculatePokerTest(): number {
+    const handProbabilities: Record<string, number> = {
+      onePair: 0.504,
+      twoPairs: 0.108,
+      threeOfAKind: 0.072,
+      poker: 0.009,
+      fiveOfAKind: 0.0001,
+      allDifferent: 0.3069,
+    };
+
+    const categories = Object.keys(handProbabilities);
+    const observedFrequencies = categories.reduce<Record<string, number>>(
+      (acc, category) => {
+        acc[category] = 0;
+        return acc;
+      },
+      {},
+    );
+
+    const totalHands = this.normalizedValues.length;
+
+    this.normalizedValues.forEach((value) => {
+      const fiveDigits = Math.floor(value * 100000)
+        .toString()
+        .padStart(5, "0")
+        .slice(-5)
+        .split("");
+
+      const handType = this.classifyPokerHand(fiveDigits);
+      // @ts-expect-error
+      observedFrequencies[handType] += 1;
+    });
+
+    const expectedFrequencies = categories.reduce<Record<string, number>>(
+      (acc, category) => {
+        acc[category] = handProbabilities[category]! * totalHands;
+        return acc;
+      },
+      {},
+    );
+
+    const groupedExpectedThreshold = 5;
+    const groupedCategories = categories.filter(
+      (category) => expectedFrequencies[category]! < groupedExpectedThreshold,
+    );
+
+    const effectiveObservedFrequencies: Record<string, number> = {};
+    const effectiveExpectedFrequencies: Record<string, number> = {};
+
+    let groupedObserved = 0;
+    let groupedExpected = 0;
+
+    categories.forEach((category) => {
+      if (groupedCategories.includes(category)) {
+        groupedObserved += observedFrequencies[category]!;
+        groupedExpected += expectedFrequencies[category]!;
+        return;
+      }
+
+      effectiveObservedFrequencies[category] = observedFrequencies[category]!;
+      effectiveExpectedFrequencies[category] = expectedFrequencies[category]!;
+    });
+
+    if (groupedCategories.length > 0) {
+      effectiveObservedFrequencies.grouped = groupedObserved;
+      effectiveExpectedFrequencies.grouped = groupedExpected;
+    }
+
+    const effectiveCategories = Object.keys(effectiveObservedFrequencies);
+    const chiSquare = effectiveCategories.reduce((sum, category) => {
+      const observed = effectiveObservedFrequencies[category]!;
+      const expected = effectiveExpectedFrequencies[category]!;
+      if (expected <= 0) return sum;
+      return sum + Math.pow(observed - expected, 2) / expected;
+    }, 0);
+
+    const degreesOfFreedom = Math.max(effectiveCategories.length - 1, 0);
+
+    this.pokerTestDetails = {
+      handProbabilities,
+      observedFrequencies,
+      expectedFrequencies,
+      groupedExpectedThreshold,
+      groupedCategories,
+      effectiveObservedFrequencies,
+      effectiveExpectedFrequencies,
+      chiSquare,
+      degreesOfFreedom,
+    };
+
+    return chiSquare;
+  }
+
+  private calculateSeriesTest(): number {
+    const n = this.normalizedValues.length;
+    if (n < 2) {
+      this.seriesTestDetails = {
+        k: 0,
+        totalIntervals: 0,
+        expectedFrequency: 0,
+        observedFrequencies: [],
+        chiSquare: 0,
+        degreesOfFreedom: 0,
+      };
+      return 0;
+    }
+
+    const k = Math.max(Math.floor(Math.sqrt(n)), 1);
+    const totalIntervals = k * k;
+    const observedFrequencies = new Array(totalIntervals).fill(0);
+
+    for (let i = 0; i < n - 1; i++) {
+      const x = this.normalizedValues[i]!;
+      const y = this.normalizedValues[i + 1]!;
+      const xIndex = Math.min(Math.floor(x * k), k - 1);
+      const yIndex = Math.min(Math.floor(y * k), k - 1);
+      const index = xIndex * k + yIndex;
+      observedFrequencies[index] += 1;
+    }
+
+    const expectedFrequency = (n - 1) / totalIntervals;
+    const chiSquare = observedFrequencies.reduce((sum, observed) => {
+      if (expectedFrequency <= 0) return sum;
+      return (
+        sum + Math.pow(observed - expectedFrequency, 2) / expectedFrequency
+      );
+    }, 0);
+
+    const degreesOfFreedom = Math.max(totalIntervals - 1, 0);
+
+    this.seriesTestDetails = {
+      k,
+      totalIntervals,
+      expectedFrequency,
+      observedFrequencies,
+      chiSquare,
+      degreesOfFreedom,
+    };
+
+    return chiSquare;
   }
 
   private calculateMedian(values: number[]): number {
@@ -262,6 +523,14 @@ export class RandomGenerator {
         goodnessOfFitTest: this.goodnessOfFitTest,
         tTest: this.tTest,
         varianceTest: this.varianceTest,
+        runTest: this.runTest,
+        pokerTest: this.pokerTest,
+        seriesTest: this.seriesTest,
+      },
+      statisticalTestsDetails: {
+        runTest: this.runTestDetails,
+        pokerTest: this.pokerTestDetails,
+        seriesTest: this.seriesTestDetails,
       },
       seed: this.seed,
       initialValue: this.initialValue,
