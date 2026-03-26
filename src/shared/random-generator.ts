@@ -1,6 +1,13 @@
 import type { SeedData } from "..";
 
+interface TraficPacket {
+  id: number;
+  value: number;
+  isMalicious: boolean;
+}
+
 export class RandomGenerator {
+  private static MALICIOUS_PROBABILITY = 0.15;
   seed: number;
   initialValue: number;
   NumberOfRandoms: number;
@@ -10,8 +17,9 @@ export class RandomGenerator {
 
   values: number[] = [];
   normalizedValues: number[] = [];
-  normalizedValuesMinusAverage: number[] = [];
-  normalizedValuesMinusAverageSquared: number[] = [];
+  trafficPackets: TraficPacket[] = [];
+  maliciousCount: number = 0;
+  legitimateCount: number = 0;
   uniqueValuesCount: number = 0;
 
   constructor({
@@ -46,6 +54,21 @@ export class RandomGenerator {
 
     const uniqueValues = new Set(this.values);
     this.uniqueValuesCount = uniqueValues.size;
+
+    this.trafficPackets = this.generateMonteCarlo();
+  }
+
+  private generateMonteCarlo() {
+    const packets = this.normalizedValues.map((val, i) => ({
+      id: i + 1,
+      value: val,
+      isMalicious: val <= RandomGenerator.MALICIOUS_PROBABILITY,
+    }));
+
+    this.maliciousCount = packets.filter((p) => p.isMalicious).length;
+    this.legitimateCount = packets.filter((p) => !p.isMalicious).length;
+
+    return packets;
   }
 
   getDetails() {
@@ -57,6 +80,21 @@ export class RandomGenerator {
       uniqueValuesCount: this.uniqueValuesCount,
       NumberOfRandoms: this.NumberOfRandoms,
       Modulus: this.Modulus,
+      MonteCarloDetails: {
+        totalPackets: {
+          amount: this.trafficPackets.length,
+          percentage: 100,
+        },
+        maliciousCount: {
+          amount: this.maliciousCount,
+          percentage: (this.maliciousCount / this.trafficPackets.length) * 100,
+        },
+        legitimateCount: {
+          amount: this.legitimateCount,
+          percentage: (this.legitimateCount / this.trafficPackets.length) * 100,
+        },
+      },
+      MonteCarloResults: this.trafficPackets,
       values: this.values,
       normalizedValues: this.normalizedValues,
     };
