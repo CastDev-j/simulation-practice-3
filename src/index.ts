@@ -1,7 +1,10 @@
+import { InverseTransformation } from "./methods/inverse-transformation";
+import { TriangularDistribution } from "./methods/triangular";
+import { ContinuousUniformDistribution } from "./methods/uniform-continuous";
 import { RandomGenerator } from "./shared/random-generator";
 
-const INPUT = `${import.meta.dir}/files/input.json`;
-const OUTPUT = `${import.meta.dir}/files/output.json`;
+const INPUT = `src/files/input.json`;
+const OUTPUT = `src/files/output.json`;
 
 export interface SeedData {
   seed: number;
@@ -14,12 +17,18 @@ export interface SeedData {
 
 (async () => {
   try {
-    const generator = new RandomGenerator(await Bun.file(INPUT).json());
+    const generator = new RandomGenerator(
+      await Bun.file(INPUT).json(),
+      InverseTransformation,
+      ContinuousUniformDistribution,
+      TriangularDistribution,
+    );
 
     await Bun.file(OUTPUT).write(
       `${JSON.stringify(generator.getDetails(), null, 2)}\n`,
     );
-    console.log(generator.getDetails());
+
+    console.log(JSON.stringify(generator.getDetails(), null, 2));
   } catch (error) {
     console.error("Error reading or parsing file:", error);
   }

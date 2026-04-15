@@ -1,8 +1,8 @@
 {
-    "seed": 6,
+    "seed": 1,
     "initialValue": 3,
     "Multiplier": 5,
     "Increment": 9,
-    "Modulus": 4096,
-    "NumberOfRandoms": 10000
+    "Modulus": 124,
+    "NumberOfRandoms": 10
 }

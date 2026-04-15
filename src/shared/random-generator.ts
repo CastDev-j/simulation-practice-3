@@ -1,13 +1,7 @@
 import type { SeedData } from "..";
-
-interface TraficPacket {
-  id: number;
-  value: number;
-  isMalicious: boolean;
-}
+import type { MethodConstructor, MethodInterface } from "../methods/types";
 
 export class RandomGenerator {
-  private static MALICIOUS_PROBABILITY = 0.15;
   seed: number;
   initialValue: number;
   NumberOfRandoms: number;
@@ -17,19 +11,21 @@ export class RandomGenerator {
 
   values: number[] = [];
   normalizedValues: number[] = [];
-  trafficPackets: TraficPacket[] = [];
-  maliciousCount: number = 0;
-  legitimateCount: number = 0;
   uniqueValuesCount: number = 0;
 
-  constructor({
-    seed,
-    initialValue,
-    NumberOfRandoms,
-    Increment,
-    Modulus,
-    Multiplier,
-  }: SeedData) {
+  methods: MethodInterface[] = [];
+
+  constructor(
+    {
+      seed,
+      initialValue,
+      NumberOfRandoms,
+      Increment,
+      Modulus,
+      Multiplier,
+    }: SeedData,
+    ...methods: MethodConstructor[]
+  ) {
     this.seed = seed;
     this.initialValue = initialValue;
     this.NumberOfRandoms = NumberOfRandoms;
@@ -51,24 +47,10 @@ export class RandomGenerator {
 
     this.values = values;
     this.normalizedValues = this.values.map((value) => value / Number(Modulus));
+    this.methods = methods.map((Method) => new Method(this.normalizedValues));
 
     const uniqueValues = new Set(this.values);
     this.uniqueValuesCount = uniqueValues.size;
-
-    this.trafficPackets = this.generateMonteCarlo();
-  }
-
-  private generateMonteCarlo() {
-    const packets = this.normalizedValues.map((val, i) => ({
-      id: i + 1,
-      value: val,
-      isMalicious: val <= RandomGenerator.MALICIOUS_PROBABILITY,
-    }));
-
-    this.maliciousCount = packets.filter((p) => p.isMalicious).length;
-    this.legitimateCount = packets.filter((p) => !p.isMalicious).length;
-
-    return packets;
   }
 
   getDetails() {
@@ -80,21 +62,12 @@ export class RandomGenerator {
       uniqueValuesCount: this.uniqueValuesCount,
       NumberOfRandoms: this.NumberOfRandoms,
       Modulus: this.Modulus,
-      MonteCarloDetails: {
-        totalPackets: {
-          amount: this.trafficPackets.length,
-          percentage: 100,
-        },
-        maliciousCount: {
-          amount: this.maliciousCount,
-          percentage: (this.maliciousCount / this.trafficPackets.length) * 100,
-        },
-        legitimateCount: {
-          amount: this.legitimateCount,
-          percentage: (this.legitimateCount / this.trafficPackets.length) * 100,
-        },
-      },
-      MonteCarloResults: this.trafficPackets,
+      average:
+        this.values.reduce((sum, value) => sum + value, 0) / this.values.length,
+      methods: this.methods.map((method) => ({
+        name: method.name,
+        results: method.getResults(),
+      })),
       values: this.values,
       normalizedValues: this.normalizedValues,
     };
