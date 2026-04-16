@@ -1,6 +1,6 @@
 export interface MethodInterface {
   name: string;
-  getResults(): any[];
+  getResults(): any;
 }
 
 export type MethodConstructor = new (

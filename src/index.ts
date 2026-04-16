@@ -20,8 +20,6 @@ export interface SeedData {
     const generator = new RandomGenerator(
       await Bun.file(INPUT).json(),
       InverseTransformation,
-      ContinuousUniformDistribution,
-      TriangularDistribution,
     );
 
     await Bun.file(OUTPUT).write(

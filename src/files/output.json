@@ -3,55 +3,41 @@
   "initialValue": 3,
   "Multiplier": 5,
   "Increment": 9,
-  "uniqueValuesCount": 10,
-  "NumberOfRandoms": 10,
+  "uniqueValuesCount": 12,
+  "NumberOfRandoms": 24,
   "Modulus": 124,
-  "average": 68.3,
+  "average": 67.5,
   "methods": [
     {
       "name": "TRANSFORMACIÓN INVERSA",
-      "results": [
-        "7.26 minutos",
-        "7.1 minutos",
-        "6.32 minutos",
-        "3.63 minutos",
-        "3.55 minutos",
-        "3.15 minutos",
-        "1.55 minutos",
-        "1.49 minutos",
-        "1.23 minutos",
-        "0.08 minutos"
-      ]
-    },
-    {
-      "name": "DISTRIBUCION UNIFORME CONTINUA",
-      "results": [
-        "13.508 segundos",
-        "13.629 segundos",
-        "14.234 segundos",
-        "17.258 segundos",
-        "17.379 segundos",
-        "17.984 segundos",
-        "21.008 segundos",
-        "21.129 segundos",
-        "21.734 segundos",
-        "24.758 segundos"
-      ]
-    },
-    {
-      "name": "DISTRIBUCION TRIANGULAR",
-      "results": [
-        "29.672 minutos",
-        "29.837 minutos",
-        "30.652 minutos",
-        "35.113 minutos",
-        "35.308 minutos",
-        "36.308 minutos",
-        "42.129 minutos",
-        "42.402 minutos",
-        "43.836 minutos",
-        "55.601 minutos"
-      ]
+      "results": {
+        "values": [
+          "Inspección: 2.91 minutos, Lijado: 11.4 minutos",
+          "Inspección: 2.84 minutos, Lijado: 11.45 minutos",
+          "Inspección: 2.53 minutos, Lijado: 11.69 minutos",
+          "Inspección: 1.45 minutos, Lijado: 12.9 minutos",
+          "Inspección: 1.42 minutos, Lijado: 12.95 minutos",
+          "Inspección: 1.26 minutos, Lijado: 13.19 minutos",
+          "Inspección: 0.62 minutos, Lijado: 14.4 minutos",
+          "Inspección: 0.6 minutos, Lijado: 14.45 minutos",
+          "Inspección: 0.49 minutos, Lijado: 14.69 minutos",
+          "Inspección: 0.03 minutos, Lijado: 15.9 minutos",
+          "Inspección: 0.02 minutos, Lijado: 15.95 minutos",
+          "Inspección: 6.87 minutos, Lijado: 10.19 minutos",
+          "Inspección: 2.91 minutos, Lijado: 11.4 minutos",
+          "Inspección: 2.84 minutos, Lijado: 11.45 minutos",
+          "Inspección: 2.53 minutos, Lijado: 11.69 minutos",
+          "Inspección: 1.45 minutos, Lijado: 12.9 minutos",
+          "Inspección: 1.42 minutos, Lijado: 12.95 minutos",
+          "Inspección: 1.26 minutos, Lijado: 13.19 minutos",
+          "Inspección: 0.62 minutos, Lijado: 14.4 minutos",
+          "Inspección: 0.6 minutos, Lijado: 14.45 minutos",
+          "Inspección: 0.49 minutos, Lijado: 14.69 minutos",
+          "Inspección: 0.03 minutos, Lijado: 15.9 minutos",
+          "Inspección: 0.02 minutos, Lijado: 15.95 minutos",
+          "Inspección: 6.87 minutos, Lijado: 10.19 minutos"
+        ]
+      }
     }
   ],
   "values": [
@@ -64,7 +50,21 @@
     91,
     92,
     97,
-    122
+    122,
+    123,
+    4,
+    29,
+    30,
+    35,
+    60,
+    61,
+    66,
+    91,
+    92,
+    97,
+    122,
+    123,
+    4
   ],
   "normalizedValues": [
     0.23387096774193547,
@@ -76,6 +76,20 @@
     0.7338709677419355,
     0.7419354838709677,
     0.782258064516129,
-    0.9838709677419355
+    0.9838709677419355,
+    0.9919354838709677,
+    0.03225806451612903,
+    0.23387096774193547,
+    0.24193548387096775,
+    0.28225806451612906,
+    0.4838709677419355,
+    0.49193548387096775,
+    0.532258064516129,
+    0.7338709677419355,
+    0.7419354838709677,
+    0.782258064516129,
+    0.9838709677419355,
+    0.9919354838709677,
+    0.03225806451612903
   ]
 }
